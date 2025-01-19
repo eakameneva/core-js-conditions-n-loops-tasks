@@ -390,17 +390,27 @@ function getSpiralMatrix(size) {
  *  ]                 ]
  */
 function rotateMatrix(matrix) {
-  const n = matrix.length;
-  const rotated = [];
+  const originalMatrix = matrix;
+
+  const n = originalMatrix.length;
 
   for (let i = 0; i < n; i += 1) {
-    rotated[i] = [];
-    for (let j = 0; j < n; j += 1) {
-      rotated[i][j] = matrix[n - j - 1][i];
+    for (let j = i + 1; j < n; j += 1) {
+      const temp = originalMatrix[i][j];
+      originalMatrix[i][j] = originalMatrix[j][i];
+      originalMatrix[j][i] = temp;
     }
   }
 
-  return rotated;
+  for (let i = 0; i < n; i += 1) {
+    for (let j = 0; j < Math.floor(n / 2); j += 1) {
+      const temp = originalMatrix[i][j];
+      originalMatrix[i][j] = originalMatrix[i][n - j - 1];
+      originalMatrix[i][n - j - 1] = temp;
+    }
+  }
+
+  return originalMatrix;
 }
 
 /**
@@ -466,24 +476,82 @@ function sortByAsc(inputArr) {
  *  'qwerty', 3 => 'qetwry' => 'qtrewy' => 'qrwtey'
  */
 function shuffleChar(str, iterations) {
+  if (!str || iterations < 1) return str;
+
   const { length } = str;
-  if (length <= 1 || iterations <= 0) return str;
+  if (length <= 1) return str;
 
-  const actualIterations = iterations % length;
-  let result = str;
+  const chars = new Array(length);
+  const original = new Array(length);
+  let cycleLength = 1;
+  let isOriginal = false;
 
-  for (let i = 0; i < actualIterations; i += 1) {
-    let temp = '';
-    let oddPart = '';
+  for (let i = 0; i < length; i += 1) {
+    chars[i] = str.charAt(i);
+    original[i] = str.charAt(i);
+  }
 
-    for (let j = 0; j < length; j += 1) {
-      if (j % 2 === 0) {
-        temp += result[j];
-      } else {
-        oddPart += result[j];
+  while (!isOriginal && cycleLength <= iterations) {
+    const temp = new Array(length);
+    let evenIndex = 0;
+    let oddIndex = Math.floor((length + 1) / 2);
+
+    for (let i = 0; i < length; i += 2) {
+      temp[evenIndex] = chars[i];
+      evenIndex += 1;
+    }
+
+    for (let i = 1; i < length; i += 2) {
+      temp[oddIndex] = chars[i];
+      oddIndex += 1;
+    }
+
+    for (let i = 0; i < length; i += 1) {
+      chars[i] = temp[i];
+    }
+
+    isOriginal = true;
+    for (let i = 0; i < length; i += 1) {
+      if (chars[i] !== original[i]) {
+        isOriginal = false;
+        break;
       }
     }
-    result = temp + oddPart;
+
+    cycleLength += 1;
+  }
+
+  cycleLength -= 1;
+  let actualIterations = iterations % cycleLength;
+  if (actualIterations === 0) actualIterations = cycleLength;
+
+  for (let i = 0; i < length; i += 1) {
+    chars[i] = str.charAt(i);
+  }
+
+  for (let iter = 0; iter < actualIterations; iter += 1) {
+    const temp = new Array(length);
+    let evenIndex = 0;
+    let oddIndex = Math.floor((length + 1) / 2);
+
+    for (let i = 0; i < length; i += 2) {
+      temp[evenIndex] = chars[i];
+      evenIndex += 1;
+    }
+
+    for (let i = 1; i < length; i += 2) {
+      temp[oddIndex] = chars[i];
+      oddIndex += 1;
+    }
+
+    for (let i = 0; i < length; i += 1) {
+      chars[i] = temp[i];
+    }
+  }
+
+  let result = '';
+  for (let i = 0; i < length; i += 1) {
+    result += chars[i];
   }
 
   return result;
